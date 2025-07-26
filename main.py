@@ -8,6 +8,8 @@ from langchain.memory import ConversationBufferMemory
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 import os
+from sklearn.metrics.pairwise import cosine_similarity
+import numpy as np
 
 load_dotenv()
 
@@ -27,8 +29,13 @@ vectorstore = Chroma(
     persist_directory=CHROMA_PATH,
 )
 
-"""Only add documents if the collection is empty"""
-# vectorstore.add_documents(docs)
+# Only add documents if the collection is valid and empty
+try:
+    if vectorstore._collection.count() == 0:
+        vectorstore.add_documents(docs)
+except Exception as e:
+    print(f"ChromaDB collection error: {e}")
+    vectorstore.add_documents(docs)
 
 llm = ChatOpenAI(model='gpt-4o-mini', temperature=0.5)
 
@@ -63,9 +70,30 @@ class QueryRequest(BaseModel):
     question: str
     history: list[str] = []
 
+
+
 @app.post("/ask")
 async def ask_question(request: QueryRequest):
-    # Pass both question and chat history for short-term memory
-    answer = qa_chain.run({"question": request.question, "chat_history": request.history})
+    # Get retrieved docs and answer
+    result = qa_chain({"question": request.question, "chat_history": request.history, "return_source_documents": True})
+    answer = result["answer"] if isinstance(result, dict) and "answer" in result else result
+    source_docs = result["source_documents"] if isinstance(result, dict) and "source_documents" in result else []
+
+    # Compute similarity if possible
+    clarification_threshold = 0.3  # Adjust as needed
+    is_vague = False
+    if source_docs:
+        try:
+            query_embedding = embeddings.embed_query(request.question)
+            chunk_embeddings = [embeddings.embed_documents([doc.page_content])[0] for doc in source_docs]
+            scores = [cosine_similarity([query_embedding], [chunk_emb])[0][0] for chunk_emb in chunk_embeddings]
+            max_score = max(scores) if scores else 0
+            if max_score < clarification_threshold:
+                is_vague = True
+        except Exception as e:
+            print(f"Similarity check failed: {e}")
+
+    if is_vague or not answer or answer.strip() == "":
+        return {"answer": "Your question is unclear or not enough context was found. Could you please clarify or provide more details?"}
     return {"answer": answer}
 

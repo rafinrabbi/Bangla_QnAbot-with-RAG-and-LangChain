@@ -1,4 +1,3 @@
-
 # Bangla RAG Chatbot with LangChain & FastAPI
 
 A Retrieval-Augmented Generation (RAG) chatbot for Bangla documents, using Gemini OCR, LangChain, Chroma vector store, and FastAPI.
@@ -174,6 +173,22 @@ Groundedness in this project refers to whether the chatbot’s answer is accurat
 
 - ✅ Yes: Answer is grounded (supported by corpus).
 - ❌ No: Not grounded / Bot did not answer or hallucinated.
+
+
+## 🧠 Memory Handling: Long-term and Short-term
+
+This project uses both long-term and short-term memory to provide contextually relevant answers:
+
+-**Long-term memory** is handled by the Chroma vector store, which stores all document chunks as embeddings. When a user asks a question, the system retrieves the most semantically similar chunks from this persistent knowledge base, ensuring that information from the entire corpus is available for retrieval at any time.
+
+-**Short-term memory** is managed by LangChain's `ConversationBufferMemory`. This keeps track of the ongoing conversation (chat history) within a session, allowing the model to reference previous user questions and its own answers. This helps the chatbot maintain context, resolve pronouns, and provide more coherent multi-turn interactions.
+
+**How it works together:**
+
+- When a user asks a question, both the current question and the chat history (short-term memory) are passed to the retrieval and generation chain.
+- The retriever uses long-term memory to fetch relevant chunks, while the LLM uses both the retrieved context and the chat history to generate a grounded, context-aware answer.
+
+This combination enables the chatbot to answer both isolated and follow-up questions effectively.
 
 ---
 

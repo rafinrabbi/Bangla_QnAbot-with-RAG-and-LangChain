@@ -218,7 +218,6 @@ I first tried extracting Bangla text directly from the PDF using **PyMuPDF**, bu
 ```
 ├── main.py                   # FastAPI backend
 ├── gradio_app.py             # Gradio chat client
-├── maincopy.py               # (Backup or alternate main script)
 ├── data_preparation.ipynb    # Data extraction and cleaning
 ├── rag_evaluation.ipynb      # RAG evaluation and metrics
 ├── requirements.txt

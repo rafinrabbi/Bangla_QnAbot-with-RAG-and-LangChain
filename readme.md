@@ -175,6 +175,8 @@ Groundedness in this project refers to whether the chatbot’s answer is accurat
 - ❌ No: Not grounded / Bot did not answer or hallucinated.
 
 
+---
+
 ## 🧠 Memory Handling: Long-term and Short-term
 
 This project uses both long-term and short-term memory to provide contextually relevant answers:

@@ -2,7 +2,7 @@
 import gradio as gr
 import requests
 
-API_URL = "http://localhost:8000/ask"  # Make sure this matches your FastAPI host
+API_URL = "http://localhost:8000/ask"  
 
 def ask_question_to_api(message, history):
     try:
